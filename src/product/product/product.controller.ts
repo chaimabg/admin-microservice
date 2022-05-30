@@ -26,8 +26,8 @@ export class ProductController {
   async update(@Body() updateProduct: UpdateProductDto, @Param() params) {
     return await this.productService.update(params.id, updateProduct);
   }
-  @EventPattern('product-client')
-  async handleClient(data: Record<string, unknown>) {
-
+  @EventPattern('product-edit')
+  async handleClient(data: Record<string, string>) {
+    await this.productService.updateQuantity(data.name, data.quantity);
   }
 }

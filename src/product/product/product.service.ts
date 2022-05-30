@@ -4,8 +4,7 @@ import { Product } from '../schemas/product.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientProxy } from '@nestjs/microservices';
-import { CreateProductDto } from "../dto/create-product.dto";
-
+import { CreateProductDto } from '../dto/create-product.dto';
 
 @Injectable()
 export class ProductService {
@@ -17,9 +16,9 @@ export class ProductService {
     const newProduct = new this.ProductModel(createProductDto);
     newProduct.save();
     this.client.emit('product-sup', {
-      'name': createProductDto.name,
-      'price': String(createProductDto.price),
-      'quantity': String(createProductDto.quantity),
+      name: createProductDto.name,
+      price: String(createProductDto.price),
+      quantity: String(createProductDto.quantity),
     });
 
     return newProduct;
@@ -31,17 +30,26 @@ export class ProductService {
   async findOne(id: number) {
     return this.ProductModel.findOne({ _id: id });
   }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
-    this.client.emit('product-client', {'id': id, 'quantity':String(updateProductDto.quantity)});
-    const product = this.ProductModel.findByIdAndUpdate(
-      { _id: id },
+    this.client.emit('product-client', {
+      name: updateProductDto.name,
+      quantity: String(updateProductDto.quantity),
+      price: String(updateProductDto.price),
+    });
+
+    const product = await this.ProductModel.findByIdAndUpdate(
+      id,
       updateProductDto,
     );
     return 'done';
   }
-  async updateProduct(id: string, quantity: number) {
-    const product = this.ProductModel.findById(id);
-
+  async updateQuantity(name: string, quantity: string) {
+    const product = await this.ProductModel.findOne({ name: name });
+    const productUpdated = await this.ProductModel.findByIdAndUpdate(
+      { _id: product._id },
+      { quantity: product.quantity - Number(quantity) },
+    );
     return 'done';
   }
 }
